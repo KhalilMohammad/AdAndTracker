@@ -36,6 +36,6 @@ io.on("connection", (socket) => {
   console.log("a user connected");
 });
 
-http.listen(3000, () => {
+http.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
