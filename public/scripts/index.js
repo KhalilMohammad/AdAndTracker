@@ -22,8 +22,8 @@ $(function () {
       data: JSON.stringify(urls),
       contentType: "application/json",
       dataType: "json",
-    }).done(function () {
-      table.clear();
+    }).always(function () {
+      table.clear().draw();
     });
   });
 
