@@ -1,0 +1,37 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css')
+    link(rel='stylesheet', href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css')
+    link(rel='stylesheet', href='https://cdn.datatables.net/1.10.22/css/dataTables.bootstrap4.min.css')
+  body
+    div(class='mt-5 mb-5')
+      div(class='container')
+        div(class='row justify-content-center')
+          div(class='col-10')
+            div(class='card')
+              div(class='card-body p-4')
+                div(class='text-center w-75 m-auto')
+                  h4 Enter url to get ad statistics
+                form
+                  div(class='form-group mb-3')
+                    label(for='urls')
+                    textarea(id='urls', required, placeholder, class=('form-control'))
+                  div(class='form-group mb-0 text-center')
+                    button(class='btn btn-primary btn-block', type='button', id='btnSubmit') Submit
+                div(class='table-responsive mt-4')
+                  table(id='tblResults', class='table table-striped table-bordered')
+                    thead
+                      tr
+                        th Domain
+                        th Ads found
+                        th Third Party Trackers found
+                        th Time to process
+
+  script(src='https://code.jquery.com/jquery-3.5.1.min.js')
+  script(src='https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js')
+  script(src='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js')
+  script(src='https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js')
+  script(src='https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js')
+  script(src='./scripts/index.js')
