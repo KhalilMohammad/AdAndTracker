@@ -21,7 +21,7 @@ function getMainDomain(url) {
   return "";
 }
 
-const getPageAdStatistics = async (domains) => {
+async function* getPageAdStatistics(domains) {
   let list;
   try {
     let currentWebsiteDomain = "";
@@ -41,6 +41,7 @@ const getPageAdStatistics = async (domains) => {
       timeout: 3000000,
       puppeteerOptions: {
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        headless: true
       },
     });
 
@@ -115,20 +116,17 @@ const getPageAdStatistics = async (domains) => {
       };
     });
 
-    const statistics = [];
     for (let index = 0; index < domains.length; index++) {
       const domain = domains[index];
-      statistics.push(await cluster.execute(domain));
+      yield await cluster.execute(domain);
     }
 
     await cluster.idle();
     await cluster.close();
-
-    return statistics;
   } catch (err) {
     console.error(err);
   }
-};
+}
 
 module.exports = {
   getPageAdStatistics,
