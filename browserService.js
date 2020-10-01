@@ -20,7 +20,7 @@ function getMainDomain(url) {
   return "";
 }
 
-async function* getPageAdStatistics(domains) {
+async function getPageAdStatistics(domains, io) {
   let list;
   try {
     let currentWebsiteDomain = "";
@@ -35,19 +35,20 @@ async function* getPageAdStatistics(domains) {
     }
 
     const cluster = await Cluster.launch({
-      concurrency: Cluster.CONCURRENCY_PAGE,
+      concurrency: Cluster.CONCURRENCY_CONTEXT,
       maxConcurrency: 10,
-      timeout: 3000000,
       puppeteerOptions: {
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
         headless: true,
       },
     });
 
-    await cluster.task(async ({ page, data: currentUrl }) => {
+    await cluster.task(async ({ page, data: { currentUrl, io } }) => {
+      console.log(`processing ${currentUrl}`);
       const thirdPartyTrackers = new Set();
 
       await page.setRequestInterception(true);
+      page.setDefaultNavigationTimeout(0);
 
       page.on("request", async (interceptedRequest) => {
         const resourceType = interceptedRequest.resourceType();
@@ -106,21 +107,27 @@ async function* getPageAdStatistics(domains) {
 
       const endTime = process.hrtime(startTime);
 
-      return {
+      const data = {
         adsUrl,
         thirdPartyTrackers: Array.from(thirdPartyTrackers),
         timeInMs: (endTime[0] * 1000000000 + endTime[1]) / 1000000,
         domain: currentUrl,
       };
+      console.log(data);
+      io.emit("onDataRecieve", data);
     });
 
     for (let index = 0; index < domains.length; index++) {
-      const domain = domains[index];
-      yield await cluster.execute(domain);
+      const currentUrl = domains[index];
+      cluster.queue({
+        currentUrl,
+        io,
+      });
     }
 
     await cluster.idle();
     await cluster.close();
+    console.log("closing");
   } catch (err) {
     console.error(err);
   }

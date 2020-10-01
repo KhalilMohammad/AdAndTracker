@@ -25,9 +25,10 @@ app.post("/", (req, res) => {
   const urls = req.body;
 
   setTimeout(async () => {
-    for await (const pageAdStatistics of getPageAdStatistics(urls)) {
-      io.emit("onDataRecieve", pageAdStatistics);
-    }
+    await getPageAdStatistics(urls, io);
+    // for await (const pageAdStatistics of getPageAdStatistics(urls)) {
+    //   io.emit("onDataRecieve", pageAdStatistics);
+    // }
   }, 0);
   res.sendStatus(200);
 });
