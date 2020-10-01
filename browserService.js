@@ -39,6 +39,9 @@ const getPageAdStatistics = async (domains) => {
       concurrency: Cluster.CONCURRENCY_PAGE,
       maxConcurrency: 10,
       timeout: 3000000,
+      puppeteerOptions: {
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      },
     });
 
     await cluster.task(async ({ page, data: currentUrl }) => {
