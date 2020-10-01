@@ -1,6 +1,5 @@
 const fs = require("fs");
 const got = require("got");
-const { PendingXHR } = require("pending-xhr-puppeteer");
 const { Cluster } = require("puppeteer-cluster");
 
 const fsPromises = fs.promises;
@@ -41,13 +40,11 @@ async function* getPageAdStatistics(domains) {
       timeout: 3000000,
       puppeteerOptions: {
         args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        headless: true
+        headless: true,
       },
     });
 
     await cluster.task(async ({ page, data: currentUrl }) => {
-      const pendingXHR = new PendingXHR(page);
-
       const thirdPartyTrackers = new Set();
 
       await page.setRequestInterception(true);
@@ -55,15 +52,6 @@ async function* getPageAdStatistics(domains) {
       page.on("request", async (interceptedRequest) => {
         const resourceType = interceptedRequest.resourceType();
         const url = interceptedRequest.url();
-        if (
-          resourceType === "image" ||
-          resourceType === "stylesheet" ||
-          resourceType === "font"
-        ) {
-          await interceptedRequest.abort();
-        } else {
-          await interceptedRequest.continue();
-        }
 
         if (resourceType === "xhr") {
           const mainDomain = getMainDomain(url);
@@ -74,6 +62,17 @@ async function* getPageAdStatistics(domains) {
           )
             thirdPartyTrackers.add(mainDomain);
         }
+
+        if (
+          resourceType === "image" ||
+          resourceType === "stylesheet" ||
+          resourceType === "font" ||
+          resourceType === "xhr"
+        ) {
+          await interceptedRequest.abort();
+        } else {
+          await interceptedRequest.continue();
+        }
       });
 
       await page.exposeFunction("getMainDomain", (text) => getMainDomain(text));
@@ -83,7 +82,6 @@ async function* getPageAdStatistics(domains) {
 
       await page.goto(currentUrl, { waitUntil: "domcontentloaded" });
 
-      await pendingXHR.waitForAllXhrFinished();
       const adsUrl = await page.evaluate(async (list) => {
         const currentWebsiteDomain = await window.getMainDomain(
           window.location.href
